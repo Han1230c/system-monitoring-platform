@@ -2,13 +2,16 @@
 Flask API Server
 Receives metrics from agents and provides API endpoints
 """
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from datetime import datetime, timezone
 from config import Config
 from models import db, Agent, SystemMetric, NetworkCheck
+import os
 
-app = Flask(__name__)
+app = Flask(__name__, 
+            template_folder='../webapp/templates',
+            static_folder='../webapp/static')
 app.config.from_object(Config)
 
 # Initialize extensions
@@ -21,12 +24,13 @@ with app.app_context():
 
 @app.route('/')
 def index():
-    """Health check endpoint"""
-    return jsonify({
-        'status': 'running',
-        'message': 'System Monitoring Platform API',
-        'version': '1.0.0'
-    })
+    """Home page - redirect to dashboard"""
+    return render_template('dashboard.html')
+
+@app.route('/dashboard')
+def dashboard():
+    """Dashboard page"""
+    return render_template('dashboard.html')
 
 @app.route('/api/v1/metrics', methods=['POST'])
 def receive_metrics():
