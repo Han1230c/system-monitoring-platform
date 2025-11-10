@@ -2,18 +2,26 @@
 
 A distributed system monitoring solution built with Python, Flask, and SQLite. Collects real-time metrics from multiple servers and provides centralized monitoring through a web dashboard.
 
-## Features
+## 🚀 Live Demo
+
+**Live Application:** [https://system-monitoring-platform.onrender.com](https://system-monitoring-platform.onrender.com)
+
+*Note: The free tier may take 50 seconds to wake up on first visit.*
+
+## ✨ Features
 
 - **Real-time Monitoring**: Collect CPU, memory, disk, and network metrics every 60 seconds
 - **Distributed Architecture**: Lightweight agents report to central server
+- **Data Visualization**: Interactive charts with Chart.js showing historical trends
 - **RESTful API**: Clean API design for data collection and retrieval
-- **Data Persistence**: SQLite database with optimized schema
+- **Responsive Dashboard**: Bootstrap-based UI that works on all devices
+- **Time Range Selection**: View metrics across 1 hour, 6 hours, 24 hours, or 7 days
 - **Automatic Failover**: Agents retry failed connections with exponential backoff
 
-## Architecture
+## 🏗️ Architecture
 ```
 ┌─────────────────┐
-│  Web Dashboard  │  (Coming Soon)
+│  Web Dashboard  │  https://system-monitoring-platform.onrender.com
 └────────┬────────┘
          │
          ↓
@@ -37,7 +45,7 @@ A distributed system monitoring solution built with Python, Flask, and SQLite. C
 └──────┘  └──────┘ └──────┘
 ```
 
-## Quick Start
+## 🚀 Quick Start
 
 ### 1. Clone the Repository
 ```bash
@@ -53,25 +61,19 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 ### 3. Install Dependencies
 ```bash
-# Install agent dependencies
-cd agent
-pip install -r requirements.txt
-
-# Install server dependencies
-cd ../server
 pip install -r requirements.txt
 ```
 
-### 4. Start the Server
+### 4. Start the Server (Local)
 ```bash
 cd server
-export PORT=5001  # Optional: change port if 5000 is in use
+export PORT=5001
 python app.py
 ```
 
 Server will start on `http://localhost:5001`
 
-### 5. Run the Agent
+### 5. Run the Agent (Local)
 
 In a new terminal:
 ```bash
@@ -82,7 +84,7 @@ python agent.py
 
 The agent will start collecting and sending metrics every 60 seconds.
 
-## Configuration
+## ⚙️ Configuration
 
 ### Agent Configuration
 
@@ -103,7 +105,7 @@ PORT=5001
 FLASK_ENV=development
 ```
 
-## API Endpoints
+## 📡 API Endpoints
 
 ### POST /api/v1/metrics
 Submit metrics from agent
@@ -116,12 +118,8 @@ Submit metrics from agent
   "timestamp": "2024-11-09T20:18:47.029778+00:00",
   "system": {
     "cpu_percent": 13.3,
-    "memory": {
-      "percent": 69.9
-    },
-    "disk": {
-      "percent": 8.1
-    }
+    "memory": { "percent": 69.9 },
+    "disk": { "percent": 8.1 }
   },
   "network": [...]
 }
@@ -133,7 +131,10 @@ List all registered agents
 ### GET /api/v1/metrics/{agent_id}/latest
 Get latest metrics for specific agent
 
-## Project Structure
+### GET /api/v1/metrics/{agent_id}?hours=24
+Get historical metrics for specific agent
+
+## 📁 Project Structure
 ```
 system-monitoring-platform/
 ├── agent/                  # Monitoring agent
@@ -150,30 +151,43 @@ system-monitoring-platform/
 │   ├── config.py         # Server configuration
 │   └── requirements.txt
 │
-├── database/             # Database schema
-│   └── init.sql          # SQL initialization script
+├── webapp/               # Web frontend
+│   ├── static/
+│   │   ├── css/         # Custom styles
+│   │   └── js/          # Dashboard & charts logic
+│   └── templates/       # HTML templates
 │
+├── database/             # Database schema
+│   └── init.sql         # SQL initialization script
+│
+├── requirements.txt      # Python dependencies
+├── start.sh             # Production start script
 └── README.md
 ```
 
-## Technology Stack
+## 🛠️ Technology Stack
 
-- **Backend**: Python, Flask
+- **Backend**: Python 3.11+, Flask 3.0, SQLAlchemy
 - **Database**: SQLite (development), PostgreSQL ready
+- **Frontend**: HTML5, CSS3, JavaScript (ES6+), Bootstrap 5
+- **Visualization**: Chart.js 4.4
 - **Agent Libraries**: psutil, requests
+- **Deployment**: Gunicorn, Render.com
 - **API**: RESTful with JSON
 
-## Development Status
+## 📊 Development Status
 
 ✅ Agent data collection  
 ✅ Flask API server  
 ✅ Database integration  
 ✅ Real-time data flow  
-🚧 Web dashboard (in progress)  
+✅ Web dashboard  
+✅ Data visualization (Chart.js)  
+✅ Cloud deployment  
 🚧 Alert system (planned)  
 🚧 Docker deployment (planned)  
 
-## Metrics Collected
+## 📈 Metrics Collected
 
 - **System Metrics**
   - CPU usage percentage
@@ -182,9 +196,32 @@ system-monitoring-platform/
 
 - **Network Checks**
   - Host reachability
-  - Latency measurements
+  - Latency measurements (ms)
   - Connection status
 
-## License
+## 🚀 Deployment
+
+The application is deployed on Render.com with automatic deployments from the master branch.
+
+**Live URL:** [https://system-monitoring-platform.onrender.com](https://system-monitoring-platform.onrender.com)
+
+### Deploy Your Own
+
+1. Fork this repository
+2. Sign up for [Render.com](https://render.com)
+3. Create a new Web Service
+4. Connect your forked repository
+5. Render will automatically detect the configuration
+
+## 📝 License
 
 MIT License
+
+## 🔗 Links
+
+- **Live Demo**: [https://system-monitoring-platform.onrender.com](https://system-monitoring-platform.onrender.com)
+- **GitHub**: [https://github.com/Han1230c/system-monitoring-platform](https://github.com/Han1230c/system-monitoring-platform)
+
+---
+
+**Built with ❤️ using Python, Flask, and Chart.js**
