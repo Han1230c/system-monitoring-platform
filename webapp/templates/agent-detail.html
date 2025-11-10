@@ -1,0 +1,185 @@
+{% extends "base.html" %}
+
+{% block title %}Agent Details - System Monitoring{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chart-container {
+        position: relative;
+        height: 300px;
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/dashboard">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Agent Details</li>
+                </ol>
+            </nav>
+            <h2 id="agent-name">Loading...</h2>
+            <p class="text-muted">Historical metrics and performance</p>
+        </div>
+        <div class="col-auto">
+            <select class="form-select" id="time-range">
+                <option value="1">Last 1 Hour</option>
+                <option value="6">Last 6 Hours</option>
+                <option value="24" selected>Last 24 Hours</option>
+                <option value="168">Last 7 Days</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- Current Status Cards -->
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">Current CPU</h6>
+                    <h2 id="current-cpu">--%</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">Current Memory</h6>
+                    <h2 id="current-memory">--%</h2>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">Current Disk</h6>
+                    <h2 id="current-disk">--%</h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="row">
+        <!-- CPU Chart -->
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">📊 CPU Usage</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="cpu-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Memory Chart -->
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">📊 Memory Usage</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="memory-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Disk Chart -->
+        <div class="col-12 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">📊 Disk Usage</h5>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container">
+                        <canvas id="disk-chart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="{{ url_for('static', filename='js/charts.js') }}"></script>
+<script>
+    // Get agent ID from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const agentId = urlParams.get('id');
+
+    if (!agentId) {
+        alert('No agent ID specified');
+        window.location.href = '/dashboard';
+    }
+
+    // Load agent details
+    async function loadAgentDetails() {
+        try {
+            // Load latest metrics
+            const response = await fetch(`/api/v1/metrics/${agentId}/latest`);
+            const data = await response.json();
+            
+            document.getElementById('current-cpu').textContent = data.cpu_percent.toFixed(1) + '%';
+            document.getElementById('current-memory').textContent = data.memory_percent.toFixed(1) + '%';
+            document.getElementById('current-disk').textContent = data.disk_percent.toFixed(1) + '%';
+            
+            // Load agent info
+            const agentsResponse = await fetch('/api/v1/agents');
+            const agentsData = await agentsResponse.json();
+            const agent = agentsData.agents.find(a => a.agent_id === agentId);
+            if (agent) {
+                document.getElementById('agent-name').textContent = agent.agent_name;
+            }
+            
+        } catch (error) {
+            console.error('Error loading agent details:', error);
+        }
+    }
+
+    // Initialize charts
+    function initializeCharts() {
+        metricsCharts.createChart('cpu-chart', agentId, 'cpu', 'CPU Usage (%)');
+        metricsCharts.createChart('memory-chart', agentId, 'memory', 'Memory Usage (%)');
+        metricsCharts.createChart('disk-chart', agentId, 'disk', 'Disk Usage (%)');
+        
+        updateCharts();
+    }
+
+    // Update all charts
+    function updateCharts() {
+        const hours = parseInt(document.getElementById('time-range').value);
+        
+        metricsCharts.updateChart('cpu-chart', agentId, 'cpu', hours);
+        metricsCharts.updateChart('memory-chart', agentId, 'memory', hours);
+        metricsCharts.updateChart('disk-chart', agentId, 'disk', hours);
+    }
+
+    // Time range change handler
+    document.getElementById('time-range').addEventListener('change', updateCharts);
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        loadAgentDetails();
+        initializeCharts();
+        
+        // Auto-refresh every 30 seconds
+        setInterval(() => {
+            loadAgentDetails();
+            updateCharts();
+        }, 30000);
+    });
+</script>
+{% endblock %}

@@ -71,7 +71,9 @@ class Dashboard {
                 <td id="disk-${agent.agent_id}">--</td>
                 <td>${this.formatTime(agent.last_seen)}</td>
                 <td>
-                    <button class="btn btn-sm btn-outline-primary">View</button>
+                    <button class="btn btn-sm btn-outline-primary" onclick="dashboard.viewDetails('${agent.agent_id}')">
+                        View
+                    </button>
                 </td>
             </tr>
         `).join('');
@@ -128,6 +130,11 @@ class Dashboard {
         setInterval(() => {
             this.loadAgents();
         }, this.updateInterval);
+    }
+
+    viewDetails(agentId) {
+        // Navigate to agent detail page
+        window.location.href = `/agent/${agentId}?id=${agentId}`;
     }
 
     showError(message) {

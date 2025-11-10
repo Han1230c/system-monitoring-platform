@@ -4,7 +4,7 @@ Receives metrics from agents and provides API endpoints
 """
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from config import Config
 from models import db, Agent, SystemMetric, NetworkCheck
 import os
@@ -31,6 +31,11 @@ def index():
 def dashboard():
     """Dashboard page"""
     return render_template('dashboard.html')
+
+@app.route('/agent/<agent_id>')
+def agent_detail(agent_id):
+    """Agent detail page"""
+    return render_template('agent-detail.html')
 
 @app.route('/api/v1/metrics', methods=['POST'])
 def receive_metrics():
@@ -131,6 +136,32 @@ def get_latest_metrics(agent_id):
             }), 404
         
         return jsonify(metric.to_dict())
+        
+    except Exception as e:
+        return jsonify({
+            'status': 'error',
+            'message': str(e)
+        }), 500
+
+@app.route('/api/v1/metrics/<agent_id>', methods=['GET'])
+def get_metrics_history(agent_id):
+    """Get historical metrics for an agent"""
+    try:
+        # Get time range from query parameters
+        hours = int(request.args.get('hours', 24))
+        start_time = datetime.now(timezone.utc) - timedelta(hours=hours)
+        
+        # Query metrics
+        metrics = SystemMetric.query.filter(
+            SystemMetric.agent_id == agent_id,
+            SystemMetric.timestamp >= start_time
+        ).order_by(SystemMetric.timestamp.asc()).all()
+        
+        return jsonify({
+            'agent_id': agent_id,
+            'time_range_hours': hours,
+            'metrics': [m.to_dict() for m in metrics]
+        })
         
     except Exception as e:
         return jsonify({
