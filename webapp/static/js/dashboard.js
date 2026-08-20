@@ -28,10 +28,13 @@ class Dashboard {
             // Render agent table
             this.renderAgentTable(data.agents);
             
-            // Load metrics for each agent
-            for (const agent of data.agents) {
-                await this.loadAgentMetrics(agent.agent_id);
-            }
+            // Load metrics for each agent, then average them. The
+            // averages need every agent's latest reading, so they can
+            // only be computed once these have all come back.
+            const readings = await Promise.all(
+                data.agents.map(agent => this.loadAgentMetrics(agent.agent_id))
+            );
+            this.updateAverages(readings.filter(Boolean));
             
             // Update last refresh time
             this.updateLastRefreshTime();
@@ -91,9 +94,29 @@ class Dashboard {
             document.getElementById(`disk-${agentId}`).innerHTML = 
                 this.formatMetric(data.disk_percent);
             
+            return data;
+            
         } catch (error) {
             console.error(`Error loading metrics for ${agentId}:`, error);
+            return null;
         }
+    }
+
+    updateAverages(readings) {
+        const cpuEl = document.getElementById('avg-cpu');
+        const memEl = document.getElementById('avg-memory');
+        
+        if (readings.length === 0) {
+            cpuEl.textContent = '--%';
+            memEl.textContent = '--%';
+            return;
+        }
+        
+        const mean = (key) =>
+            readings.reduce((sum, r) => sum + (r[key] || 0), 0) / readings.length;
+        
+        cpuEl.textContent = `${mean('cpu_percent').toFixed(1)}%`;
+        memEl.textContent = `${mean('memory_percent').toFixed(1)}%`;
     }
 
     formatMetric(value) {
