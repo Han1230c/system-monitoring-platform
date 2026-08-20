@@ -26,5 +26,5 @@ class Config:
     
     # Server configuration
     HOST = os.getenv('HOST', '0.0.0.0')
-    PORT = int(os.getenv('PORT', 5000))
+    PORT = int(os.getenv("PORT", 5050))
     DEBUG = os.getenv('FLASK_ENV', 'production') == 'development'

@@ -4,6 +4,17 @@
 
 {% block content %}
 <div class="container-fluid">
+    {% if demo_mode %}
+    <div class="alert alert-warning d-flex align-items-center mb-4" role="alert">
+        <div>
+            <strong>Demo mode.</strong>
+            The hosts below are simulated so this page has something to show.
+            Point a real agent at <code>/api/v1/metrics</code> and it will
+            appear alongside them.
+        </div>
+    </div>
+    {% endif %}
+
     <!-- Header -->
     <div class="row mb-4">
         <div class="col">

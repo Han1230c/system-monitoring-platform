@@ -7,6 +7,7 @@ from flask_cors import CORS
 from datetime import datetime, timezone, timedelta
 from config import Config
 from models import db, Agent, SystemMetric, NetworkCheck
+import demo
 import os
 
 app = Flask(__name__, 
@@ -22,15 +23,19 @@ db.init_app(app)
 with app.app_context():
     db.create_all()
 
+# Populate the public deployment with simulated hosts. No-op unless
+# DEMO_MODE is set, so a real install with real agents is unaffected.
+DEMO_ACTIVE = demo.start(app, db, Agent, SystemMetric)
+
 @app.route('/')
 def index():
     """Home page - redirect to dashboard"""
-    return render_template('dashboard.html')
+    return render_template('dashboard.html', demo_mode=DEMO_ACTIVE)
 
 @app.route('/dashboard')
 def dashboard():
     """Dashboard page"""
-    return render_template('dashboard.html')
+    return render_template('dashboard.html', demo_mode=DEMO_ACTIVE)
 
 @app.route('/agent/<agent_id>')
 def agent_detail(agent_id):
